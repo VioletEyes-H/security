@@ -29,14 +29,12 @@ import java.util.Map;
 @Component
 public class JwtTokenUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtTokenUtil.class);
-    private static final String CLAIM_KEY_USERNAME = "user_name";
+    private static final String CLAIM_KEY_OPENID = "openid";
+    private static final String CLAIM_KEY_USERNAME = "userName";
     private static final String CLAIM_KEY_CREATED = "created";
-    @Value("${jwt.secret}")
-    private String secret;
-    @Value("${jwt.expiration}")
-    private Long expiration;
-    @Value("${jwt.tokenHead}")
-    private String tokenHead;
+    private String secret ="secret";
+    private Long expiration = Long.valueOf(7200000);
+    private String tokenHead ="Authorization";
 
     /**
      * 根据负责生成JWT的token
@@ -84,6 +82,20 @@ public class JwtTokenUtil {
             username = null;
         }
         return username;
+    }
+
+    /**
+     * 从token中获取openId
+     */
+    public String getOpenIdFromToken(String token) {
+        String openId;
+        try {
+            Claims claims = getClaimsFromToken(token);
+            openId = claims.get(CLAIM_KEY_OPENID,String.class);
+        } catch (Exception e) {
+            openId = null;
+        }
+        return openId;
     }
 
     /**
