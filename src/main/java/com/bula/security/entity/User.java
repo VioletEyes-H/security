@@ -5,18 +5,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
+/**
+ * 自定义UserDetails对象
+ * 增加了一个openId对象
+ * 不可以使用重写的get方法,会返回null
+ */
 public class User implements UserDetails {
 
     private String username;
     private String password;
-    private boolean enabled;
     private Collection<? extends GrantedAuthority> authorities;
     private String openId;
 
-    public User( String openId,String username, String password, boolean enabled, Collection<? extends GrantedAuthority> authorities) {
+    public User( String openId,String username, String password,  Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
         this.password = password;
-        this.enabled = enabled;
         this.authorities = authorities;
         this.openId = openId;
     }
@@ -25,6 +28,7 @@ public class User implements UserDetails {
         return openId;
     }
 
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
@@ -32,12 +36,12 @@ public class User implements UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return password;
     }
 
-    @Override
+
     public String getUsername() {
-        return null;
+        return username;
     }
 
     @Override

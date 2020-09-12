@@ -8,14 +8,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+/**
+ * 使用自定义的UserDetailService
+ */
 @Service
 public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        return new User("", s, "", false, new ArrayList<>());
+        return new User("", s, "", new ArrayList<>());
     }
-
-    public static UserDetails loadUserByUsername(String openId, String username) {
-        return new User(openId, username, "", false, new ArrayList<>());
+    /**
+     * 重载loadUserByUsername方法
+     * @param openId
+     * @param username
+     * @return
+     */
+    public UserDetails loadUserByUsername(String openId, String username) {
+        return new User(openId, username, "", new ArrayList<>());
     }
 }

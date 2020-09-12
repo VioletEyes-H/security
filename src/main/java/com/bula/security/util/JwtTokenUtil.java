@@ -2,6 +2,8 @@ package com.bula.security.util;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.bula.security.entity.User;
+import com.bula.security.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -32,9 +34,9 @@ public class JwtTokenUtil {
     private static final String CLAIM_KEY_OPENID = "openid";
     private static final String CLAIM_KEY_USERNAME = "userName";
     private static final String CLAIM_KEY_CREATED = "created";
-    private String secret ="secret";
+    private String secret = "secret";
     private Long expiration = Long.valueOf(7200000);
-    private String tokenHead ="Authorization";
+    private String tokenHead = "Authorization";
 
     /**
      * 根据负责生成JWT的token
@@ -77,7 +79,7 @@ public class JwtTokenUtil {
         String username;
         try {
             Claims claims = getClaimsFromToken(token);
-            username = claims.get(CLAIM_KEY_USERNAME,String.class);
+            username = claims.get(CLAIM_KEY_USERNAME, String.class);
         } catch (Exception e) {
             username = null;
         }
@@ -91,7 +93,7 @@ public class JwtTokenUtil {
         String openId;
         try {
             Claims claims = getClaimsFromToken(token);
-            openId = claims.get(CLAIM_KEY_OPENID,String.class);
+            openId = claims.get(CLAIM_KEY_OPENID, String.class);
         } catch (Exception e) {
             openId = null;
         }
@@ -128,9 +130,10 @@ public class JwtTokenUtil {
     /**
      * 根据用户信息生成token
      */
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(User userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
+        claims.put(CLAIM_KEY_OPENID, userDetails.getOpenId());
         claims.put(CLAIM_KEY_CREATED, new Date());
         return generateToken(claims);
     }
@@ -141,26 +144,26 @@ public class JwtTokenUtil {
      * @param oldToken 带tokenHead的token
      */
     public String refreshHeadToken(String oldToken) {
-        if(StrUtil.isEmpty(oldToken)){
+        if (StrUtil.isEmpty(oldToken)) {
             return null;
         }
         String token = oldToken.substring(tokenHead.length());
-        if(StrUtil.isEmpty(token)){
+        if (StrUtil.isEmpty(token)) {
             return null;
         }
         //token校验不通过
         Claims claims = getClaimsFromToken(token);
-        if(claims==null){
+        if (claims == null) {
             return null;
         }
         //如果token已经过期，不支持刷新
-        if(isTokenExpired(token)){
+        if (isTokenExpired(token)) {
             return null;
         }
         //如果token在30分钟之内刚刷新过，返回原token
-        if(tokenRefreshJustBefore(token,30*60)){
+        if (tokenRefreshJustBefore(token, 30 * 60)) {
             return token;
-        }else{
+        } else {
             claims.put(CLAIM_KEY_CREATED, new Date());
             return generateToken(claims);
         }
@@ -168,15 +171,16 @@ public class JwtTokenUtil {
 
     /**
      * 判断token在指定时间内是否刚刚刷新过
+     *
      * @param token 原token
-     * @param time 指定时间（秒）
+     * @param time  指定时间（秒）
      */
     private boolean tokenRefreshJustBefore(String token, int time) {
         Claims claims = getClaimsFromToken(token);
         Date created = claims.get(CLAIM_KEY_CREATED, Date.class);
         Date refreshDate = new Date();
         //刷新时间在创建时间的指定时间内
-        if(refreshDate.after(created)&&refreshDate.before(DateUtil.offsetSecond(created,time))){
+        if (refreshDate.after(created) && refreshDate.before(DateUtil.offsetSecond(created, time))) {
             return true;
         }
         return false;
